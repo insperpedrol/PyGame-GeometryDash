@@ -57,13 +57,12 @@ class Player(pygame.sprite.Sprite):
                 self.on_ground = False
 
         def update(self):
-            if not self.on_ground:
-                self.speedy += self.gravity
-                self.rect.y += self.speedy
-                if self.rect.bottom >= HEIGHT / 1.3:
-                    self.rect.bottom = HEIGHT / 1.3
-                    self.on_ground = True
-                    self.speedy = 0
+            self.speedy += self.gravity
+            self.rect.y += self.speedy
+            if self.rect.bottom >= HEIGHT / 1.3:
+                self.rect.bottom = HEIGHT / 1.3
+                self.on_ground = True
+                self.speedy = 0
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, img):
@@ -77,8 +76,30 @@ class Spike(pygame.sprite.Sprite):
     def __init__(self, img):
         self.img = img
 
+class Fundo(pygame.sprite.Sprite):
+    def __init__(self,img):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img    
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = -180
+        self.speedx = 8
+    
+    def update(self):
+        self.rect.x -= self.speedx
+        if self.rect.right <= 0:
+            self.rect.x = self.rect.width   
+
 all_sprites = pygame.sprite.Group()
 player = Player(sprites['Player'])
+
+player = Player(sprites['Player'])
+fundo1 = Fundo(sprites['background'])
+fundo2 = Fundo(sprites['background'])
+fundo2.rect.x += fundo2.rect.width
+
+all_sprites.add(fundo1)
+all_sprites.add(fundo2)
 all_sprites.add(player)
 
 # ===== Loop principal =====
