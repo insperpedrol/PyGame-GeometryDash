@@ -15,6 +15,7 @@ player_HEIGHT = 75
 
 sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
+sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
 sprites['Player'] = pygame.image.load('assets\img\cubo.png').convert_alpha()
 
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
@@ -79,27 +80,47 @@ class Spike(pygame.sprite.Sprite):
 class Fundo(pygame.sprite.Sprite):
     def __init__(self,img):
         pygame.sprite.Sprite.__init__(self)
-        self.image = img    
+        self.image = img
         self.rect = self.image.get_rect()
         self.rect.x = 0
-        self.rect.y = -180
-        self.speedx = 8
+        self.rect.y = 0
+        self.speedx = 4
     
     def update(self):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
-            self.rect.x = self.rect.width   
+            self.rect.x = self.rect.width
+
+class Floor(pygame.sprite.Sprite):
+    def __init__(self,img):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = HEIGHT / 1.3
+        self.speedx = 4
+    
+    def update(self):
+        self.rect.x -= self.speedx
+        if self.rect.right <= 0:
+            self.rect.x = self.rect.width
 
 all_sprites = pygame.sprite.Group()
-player = Player(sprites['Player'])
 
 player = Player(sprites['Player'])
-fundo1 = Fundo(sprites['background'])
-fundo2 = Fundo(sprites['background'])
+
+fundo1 = Fundo(sprites['blue'])
+fundo2 = Fundo(sprites['blue'])
 fundo2.rect.x += fundo2.rect.width
-
 all_sprites.add(fundo1)
 all_sprites.add(fundo2)
+
+floor1 = Floor(sprites['blue'])
+floor2 = Floor(sprites['blue'])
+floor2.rect.x += floor2.rect.width
+all_sprites.add(floor1)
+all_sprites.add(floor2)
+
 all_sprites.add(player)
 
 # ===== Loop principal =====
@@ -117,13 +138,6 @@ while game:
     # ----- Gera saídas
     window.fill((255, 255, 255))  # Preenche com a cor branca
 
-    # Coloca o background
-    window.blit(sprites['background'], (0, 0))
-    window.blit(backcolor, (0, 0))
-
-    # Coloca o chao
-    window.blit(sprites['background'], (0, HEIGHT / 1.3))
-    window.blit(backcolor2, (0, HEIGHT / 1.3))
     all_sprites.draw(window)
 
     # ----- Atualiza estado do jogo
