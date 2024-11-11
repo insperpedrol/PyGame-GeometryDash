@@ -12,11 +12,14 @@ pygame.display.set_caption('Geometry Dash - Python Edition')
 # ----- Inicia assets
 player_WIDTH = 75
 player_HEIGHT = 75
+elements = pygame.sprite.Group()
 
 sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
-sprites['Player'] = pygame.image.load('assets\img\cubo.png').convert_alpha()
+sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
+sprites['Spike'] = pygame.image.load('assets\\img\\spike.png').convert_alpha()
+spike_resized = pygame.transform.scale(sprites['Spike'], (50, 50))
 
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
 
@@ -75,7 +78,9 @@ class Platform(pygame.sprite.Sprite):
 
 class Spike(pygame.sprite.Sprite):
     def __init__(self, img):
-        self.img = img
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img
+        self.rect = self.image.get_rect()
 
 class Fundo(pygame.sprite.Sprite):
     def __init__(self,img):
@@ -84,7 +89,7 @@ class Fundo(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = 0
-        self.speedx = 4
+        self.speedx = 1
     
     def update(self):
         self.rect.x -= self.speedx
@@ -98,12 +103,13 @@ class Floor(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = HEIGHT / 1.3
-        self.speedx = 4
+        self.speedx = 10
     
     def update(self):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
             self.rect.x = self.rect.width
+    
 
 all_sprites = pygame.sprite.Group()
 
@@ -112,6 +118,9 @@ player = Player(sprites['Player'])
 fundo1 = Fundo(sprites['blue'])
 fundo2 = Fundo(sprites['blue'])
 fundo2.rect.x += fundo2.rect.width
+
+spikes = Fundo(sprites['Spike'])
+
 all_sprites.add(fundo1)
 all_sprites.add(fundo2)
 
@@ -120,6 +129,7 @@ floor2 = Floor(sprites['blue'])
 floor2.rect.x += floor2.rect.width
 all_sprites.add(floor1)
 all_sprites.add(floor2)
+# all_sprites.add(Spike(sprites['Spike']))
 
 all_sprites.add(player)
 
@@ -137,8 +147,10 @@ while game:
 
     # ----- Gera saídas
     window.fill((255, 255, 255))  # Preenche com a cor branca
+    
 
     all_sprites.draw(window)
+    window.blit(spike_resized, (50, 155))    
 
     # ----- Atualiza estado do jogo
     pygame.display.update()  # Mostra o novo frame para o jogador
@@ -150,3 +162,16 @@ while game:
 # ===== Finalização =====
 pygame.quit()  # Função do PyGame que finaliza os recursos utilizados
 
+def init_level(map):
+    x = 0
+    y = 0
+
+    for row in map:
+        for col in row:
+            if col == "Spike":
+                Spike(sprites['Spike'], (x, y), elements)
+            # if col == "End":
+            #     End(avatar, (x, y), elements)
+            x += 32
+        y += 32
+        x = 0
