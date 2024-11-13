@@ -1,6 +1,8 @@
 # ===== Inicialização =====
 # ----- Importa e inicia pacotes
 import pygame
+import csv
+import os   
 import random
 pygame.init()
 
@@ -12,6 +14,7 @@ pygame.display.set_caption('Geometry Dash - Python Edition')
 # ----- Inicia assets
 player_WIDTH = 75
 player_HEIGHT = 75
+Camera = 0
 elements = pygame.sprite.Group()
 
 sprites = {}
@@ -20,7 +23,7 @@ sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
 sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
 sprites['Spike'] = pygame.image.load('assets\\img\\spike.png').convert_alpha()
 spike_resized = pygame.transform.scale(sprites['Spike'], (50, 50))
-
+sprites['Spike'] = spike_resized
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
 
 
@@ -40,6 +43,15 @@ backcolor2.fill((52, 128, 235))
 
 game = True
 clock = pygame.time.Clock()
+
+# Parent class
+class Draw(pygame.sprite.Sprite):
+    """parent class to all obstacle classes; Sprite class"""
+
+    def __init__(self, image, pos, *groups):
+        super().__init__(*groups)
+        self.image = image
+        self.rect = self.image.get_rect(topleft=pos)
 
 class Player(pygame.sprite.Sprite):
         def __init__(self,img):
@@ -76,11 +88,18 @@ class Platform(pygame.sprite.Sprite):
     def __init__(self, img):
         self.img = img
 
-class Spike(pygame.sprite.Sprite):
-    def __init__(self, img):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = img
-        self.rect = self.image.get_rect()
+class Spike(Draw):
+    """spike"""
+
+    def __init__(self, image, pos, *groups):
+        super().__init__(image, pos, *groups)
+        self.speedx = 10
+
+    def update(self):
+        self.rect.x -= self.speedx
+        # if self.rect.right <= 0:
+        #     self.rect.x = self.rect.width
+
 
 class Fundo(pygame.sprite.Sprite):
     def __init__(self,img):
@@ -109,7 +128,32 @@ class Floor(pygame.sprite.Sprite):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
             self.rect.x = self.rect.width
-    
+
+
+def load_map(filename):
+    with open(filename, newline='') as csvfile:
+        map_data = []
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        for row in csv_reader:
+            map_data.append([(cell) for cell in row])
+    return map_data
+
+
+map_data = load_map("C:\\Users\\Andre\\Desktop\\pygames\\geometrydash\\PyGame-GeometryDash\\assets\\maps\\level_1.csv")
+elements = pygame.sprite.Group()
+
+def init_level(map):
+    all_spikes = pygame.sprite.Group()
+    x = 0
+    y = 0
+    for row in map:
+        for col in row:
+            if col == "Spike":
+                all_spikes.add(Spike(sprites['Spike'], (x, y), elements))
+            x += 50
+        y += 50 
+        x = 0
+    return all_spikes
 
 all_sprites = pygame.sprite.Group()
 
@@ -133,9 +177,10 @@ all_sprites.add(floor2)
 
 all_sprites.add(player)
 
+all_spikes = init_level(map_data)
+
 # ===== Loop principal =====
 while game:
-
     # ----- Trata eventos
     for event in pygame.event.get():
         # ----- Verifica consequências  
@@ -147,14 +192,16 @@ while game:
 
     # ----- Gera saídas
     window.fill((255, 255, 255))  # Preenche com a cor branca
-    
 
+    Camera = -fundo1.speedx
     all_sprites.draw(window)
-    window.blit(spike_resized, (50, 155))    
+    all_spikes.draw(window)
+    elements.draw(window)
 
     # ----- Atualiza estado do jogo
     pygame.display.update()  # Mostra o novo frame para o jogador
     all_sprites.update()
+    all_spikes.update()
 
     FPS = 120
     clock.tick(FPS)
@@ -162,16 +209,3 @@ while game:
 # ===== Finalização =====
 pygame.quit()  # Função do PyGame que finaliza os recursos utilizados
 
-def init_level(map):
-    x = 0
-    y = 0
-
-    for row in map:
-        for col in row:
-            if col == "Spike":
-                Spike(sprites['Spike'], (x, y), elements)
-            # if col == "End":
-            #     End(avatar, (x, y), elements)
-            x += 32
-        y += 32
-        x = 0
