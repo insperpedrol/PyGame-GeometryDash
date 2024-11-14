@@ -133,7 +133,7 @@ class Floor(pygame.sprite.Sprite):
 def load_map(filename):
     with open(filename, newline='') as csvfile:
         map_data = []
-        csv_reader = csv.reader(csvfile, delimiter=',')
+        csv_reader = csv.reader(csvfile, delimiter=';')
         for row in csv_reader:
             map_data.append([(cell) for cell in row])
     return map_data
