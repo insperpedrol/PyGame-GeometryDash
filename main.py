@@ -17,6 +17,8 @@ player_HEIGHT = 75
 Camera = 0
 elements = pygame.sprite.Group()
 
+
+# --- Creating sprites dictionary >
 sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
@@ -26,13 +28,19 @@ spike_resized = pygame.transform.scale(sprites['Spike'], (50, 50))
 sprites['Spike'] = spike_resized
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
 
+# --- Implementing the song >
+pygame.mixer.music.load('assets\\songs\\gdsong.wav')
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play()
 
+# --- Adding the background
 backcolorWIDTH = 720
 backcolorHEIGHT = backcolorWIDTH
 backcolor = pygame.Surface((backcolorWIDTH, backcolorHEIGHT))
 backcolor.set_alpha(128)
 backcolor.fill((53, 107, 232))
 
+# --- Adding the Floor
 backcolorWIDTH2 = 720
 backcolorHEIGHT2 = backcolorWIDTH2
 backcolor2 = pygame.Surface((backcolorWIDTH2, backcolorHEIGHT2))
@@ -139,7 +147,7 @@ def load_map(filename):
     return map_data
 
 
-map_data = load_map("C:\\Users\\Andre\\Desktop\\pygames\\geometrydash\\PyGame-GeometryDash\\assets\\maps\\level_1.csv")
+map_data = load_map("assets\\maps\\level_1.csv")
 elements = pygame.sprite.Group()
 
 def init_level(map):
