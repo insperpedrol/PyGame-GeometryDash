@@ -17,6 +17,8 @@ player_HEIGHT = 75
 Camera = 0
 elements = pygame.sprite.Group()
 
+
+#  gerando dicionairios
 sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
@@ -27,12 +29,18 @@ sprites['Spike'] = spike_resized
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
 
 
+pygame.mixer.music.load('assets\\songs\\gdsong.wav')
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play()
+
+# --- Adicionando fundo
 backcolorWIDTH = 720
 backcolorHEIGHT = backcolorWIDTH
 backcolor = pygame.Surface((backcolorWIDTH, backcolorHEIGHT))
 backcolor.set_alpha(128)
 backcolor.fill((53, 107, 232))
 
+# --- Adicionando chao 
 backcolorWIDTH2 = 720
 backcolorHEIGHT2 = backcolorWIDTH2
 backcolor2 = pygame.Surface((backcolorWIDTH2, backcolorHEIGHT2))
@@ -46,7 +54,6 @@ clock = pygame.time.Clock()
 
 # Parent class
 class Draw(pygame.sprite.Sprite):
-    """parent class to all obstacle classes; Sprite class"""
 
     def __init__(self, image, pos, *groups):
         super().__init__(*groups)
@@ -56,12 +63,15 @@ class Draw(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
         def __init__(self,img):
             pygame.sprite.Sprite.__init__(self)
+            
             self.image = img
 
             self.rect = self.image.get_rect()
+           
             self.rect.centerx = WIDTH / 5.2
             self.rect.bottom = HEIGHT / 1.3
-
+            
+            
             self.gravity = 0.3
             self.jump_speed = -9
             self.speedy = 2.5
@@ -79,6 +89,11 @@ class Player(pygame.sprite.Sprite):
                 self.rect.bottom = HEIGHT / 1.3
                 self.on_ground = True
                 self.speedy = 0
+        def volta_posicao(self):
+            self.rect.centerx = WIDTH / 5.2
+            self.rect.bottom = HEIGHT / 1.3
+            self.speedy = 0
+            self.on_ground = True
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, img):
@@ -97,8 +112,7 @@ class Spike(Draw):
 
     def update(self):
         self.rect.x -= self.speedx
-        # if self.rect.right <= 0:
-        #     self.rect.x = self.rect.width
+
 
 
 class Fundo(pygame.sprite.Sprite):
@@ -139,7 +153,7 @@ def load_map(filename):
     return map_data
 
 
-map_data = load_map("C:\\Users\\Andre\\Desktop\\pygames\\geometrydash\\PyGame-GeometryDash\\assets\\maps\\level_1.csv")
+map_data = load_map("assets\\maps\\level_1.csv")
 elements = pygame.sprite.Group()
 
 def init_level(map):
@@ -154,6 +168,8 @@ def init_level(map):
         y += 50 
         x = 0
     return all_spikes
+
+
 
 all_sprites = pygame.sprite.Group()
 
@@ -173,7 +189,7 @@ floor2 = Floor(sprites['blue'])
 floor2.rect.x += floor2.rect.width
 all_sprites.add(floor1)
 all_sprites.add(floor2)
-# all_sprites.add(Spike(sprites['Spike']))
+
 
 all_sprites.add(player)
 
@@ -189,6 +205,13 @@ while game:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.jump()
+    
+    if pygame.sprite.spritecollide(player, all_spikes, False):
+        player.volta_posicao() 
+        all_spikes = init_level(map_data)
+        pygame.mixer.music.play()
+        
+
 
     # ----- Gera saídas
     window.fill((255, 255, 255))  # Preenche com a cor branca
@@ -207,5 +230,4 @@ while game:
     clock.tick(FPS)
 
 # ===== Finalização =====
-pygame.quit()  # Função do PyGame que finaliza os recursos utilizados
-
+pygame.quit() 
