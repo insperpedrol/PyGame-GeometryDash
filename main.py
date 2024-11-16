@@ -17,8 +17,6 @@ player_HEIGHT = 75
 Camera = 0
 elements = pygame.sprite.Group()
 
-
-#  gerando dicionairios
 sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
@@ -28,19 +26,17 @@ spike_resized = pygame.transform.scale(sprites['Spike'], (50, 50))
 sprites['Spike'] = spike_resized
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
 
-
+# --- Implementing the song >
 pygame.mixer.music.load('assets\\songs\\gdsong.wav')
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play()
 
-# --- Adicionando fundo
 backcolorWIDTH = 720
 backcolorHEIGHT = backcolorWIDTH
 backcolor = pygame.Surface((backcolorWIDTH, backcolorHEIGHT))
 backcolor.set_alpha(128)
 backcolor.fill((53, 107, 232))
 
-# --- Adicionando chao 
 backcolorWIDTH2 = 720
 backcolorHEIGHT2 = backcolorWIDTH2
 backcolor2 = pygame.Surface((backcolorWIDTH2, backcolorHEIGHT2))
