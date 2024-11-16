@@ -22,9 +22,14 @@ sprites['background'] = pygame.image.load("assets\\img\\background.png").convert
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
 sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
 sprites['Spike'] = pygame.image.load('assets\\img\\spike.png').convert_alpha()
-spike_resized = pygame.transform.scale(sprites['Spike'], (50, 50))
-sprites['Spike'] = spike_resized
+spike_novo = pygame.transform.scale(sprites['Spike'], (50, 50))
+
+sprites['Spike'] = spike_novo
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
+
+sprites['Bloco']  = pygame.image.load('assets\\img\\bloco.png').convert_alpha()
+bloco_novo = pygame.transform.scale(sprites['Bloco'], (50, 50))
+sprites['Bloco'] = bloco_novo
 
 # --- Implementing the song >
 pygame.mixer.music.load('assets\\songs\\gdsong.wav')
@@ -109,6 +114,13 @@ class Spike(Draw):
     def update(self):
         self.rect.x -= self.speedx
 
+class blocos(Draw):
+    def __init__(self, image, pos, *groups):
+        super().__init__(image, pos, *groups)
+        self.speedx =10
+    def update(self):
+        self.rect.x -= self.speedx
+
 
 
 class Fundo(pygame.sprite.Sprite):
@@ -154,16 +166,21 @@ elements = pygame.sprite.Group()
 
 def init_level(map):
     all_spikes = pygame.sprite.Group()
+    all_platforms = pygame.sprite.Group()
     x = 0
     y = 0
     for row in map:
         for col in row:
             if col == "Spike":
                 all_spikes.add(Spike(sprites['Spike'], (x, y), elements))
+            
+            elif col == "Bloco":  
+                all_platforms.add(blocos(sprites['Bloco'], (x, y), elements))
             x += 50
+
         y += 50 
         x = 0
-    return all_spikes
+    return all_spikes, all_platforms
 
 
 
@@ -189,10 +206,18 @@ all_sprites.add(floor2)
 
 all_sprites.add(player)
 
-all_spikes = init_level(map_data)
+all_spikes, all_platforms  = init_level(map_data)
 
+tentativas = 0
+BRANCO = (255, 255, 255)
+fonte = pygame.font.Font(None, 38) 
+texto = (f'Mortes: {tentativas}')
+texto_ =  fonte.render(texto, True, BRANCO)
+posicao = (520, 5)
 # ===== Loop principal =====
 while game:
+    
+
     # ----- Trata eventos
     for event in pygame.event.get():
         # ----- Verifica consequências  
@@ -204,17 +229,22 @@ while game:
     
     if pygame.sprite.spritecollide(player, all_spikes, False):
         player.volta_posicao()
-
-
         all_spikes.empty()
+        all_platforms.empty()
         elements.empty()
-        
-
-        all_spikes = init_level(map_data)
-
+        all_spikes, all_platforms = init_level(map_data)
         pygame.mixer.music.stop()
         pygame.mixer.music.play()
-        
+        tentativas += 1
+        texto = (f'Mortes: {tentativas}')
+        texto_ =  fonte.render(texto, True, BRANCO)
+    
+    if pygame.sprite.spritecollide(player, all_platforms, False):
+        platform = pygame.sprite.spritecollideany(player, all_platforms)
+        player.rect.bottom = platform.rect.top
+        player.on_ground = True
+        player.speedy = 0
+    
 
 
     # ----- Gera saídas
@@ -223,12 +253,15 @@ while game:
     Camera = -fundo1.speedx
     all_sprites.draw(window)
     all_spikes.draw(window)
+    all_platforms.draw(window)
     elements.draw(window)
+    window.blit(texto_, posicao)
 
     # ----- Atualiza estado do jogo
     pygame.display.update()  # Mostra o novo frame para o jogador
     all_sprites.update()
     all_spikes.update()
+    all_platforms.update()
 
     FPS = 120
     clock.tick(FPS)
