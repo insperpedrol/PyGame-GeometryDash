@@ -203,8 +203,16 @@ while game:
                 player.jump()
     
     if pygame.sprite.spritecollide(player, all_spikes, False):
-        player.volta_posicao() 
+        player.volta_posicao()
+
+
+        all_spikes.empty()
+        elements.empty()
+        
+
         all_spikes = init_level(map_data)
+
+        pygame.mixer.music.stop()
         pygame.mixer.music.play()
         
 
