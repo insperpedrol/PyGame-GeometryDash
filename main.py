@@ -11,7 +11,8 @@ WIDTH = 720
 HEIGHT = 720
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Cube Dash - Pygame Edition')
-# ----- Inicia assets
+
+# ----- Define assets e adiciona ao dícionario de sprites
 player_WIDTH = 75
 player_HEIGHT = 75
 Camera = 0
@@ -20,29 +21,19 @@ sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
 sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
-
 inicio =  pygame.image.load("assets\\img\\inicio.png").convert()
-
 fim = pygame.image.load("assets\\img\\fim.png").convert()
-
 sprites['Spike'] = pygame.image.load('assets\\img\\spike.png').convert_alpha()
 spike_novo = pygame.transform.scale(sprites['Spike'], (53, 53))
-
 sprites['Moeda'] = pygame.image.load('assets\\img\\moeda.png').convert_alpha()
 moeda = pygame.transform.scale(sprites['Moeda'], (60, 60))
 sprites['Moeda'] = moeda
-
 sprites['Spike'] = spike_novo
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
-
 sprites['Bloco']  = pygame.image.load('assets\\img\\bloco.png').convert_alpha()
 bloco_novo = pygame.transform.scale(sprites['Bloco'], (53, 53))
 sprites['Bloco'] = bloco_novo
 
-
-# --- Implementando musica
-
-#som_morte = pygame.mixer.Sound('assets\\songs\\bomba.mp3')
 
 backcolorWIDTH = 720
 backcolorHEIGHT = backcolorWIDTH
@@ -61,7 +52,7 @@ backcolor2.fill((52, 128, 235))
 game = True
 clock = pygame.time.Clock()
 
-# Classes
+#------- Define Classes
 class Draw(pygame.sprite.Sprite):
 
     def __init__(self, image, pos, *groups):
@@ -120,16 +111,12 @@ class Spike(Draw):
 
     def update(self):
         self.rect.x -= self.speedx
-
 class blocos(Draw):
     def __init__(self, image, pos, *groups):
         super().__init__(image, pos, *groups)
         self.speedx =9
     def update(self):
         self.rect.x -= self.speedx
-
-
-
 class Fundo(pygame.sprite.Sprite):
     def __init__(self,img):
         pygame.sprite.Sprite.__init__(self)
@@ -138,12 +125,10 @@ class Fundo(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = 0
         self.speedx = 1
-    
     def update(self):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
             self.rect.x = self.rect.width
-
 class Floor(pygame.sprite.Sprite):
     def __init__(self,img):
         pygame.sprite.Sprite.__init__(self)
@@ -152,7 +137,6 @@ class Floor(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = HEIGHT / 1.3
         self.speedx = 9
-    
     def update(self):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
@@ -164,8 +148,8 @@ class End(Draw):
     def update(self):
         self.rect.x -= self.speedx
 
-# le o mapa do jogo 
-# lógica de leitura do mapa baseada no jogo desse repositorio https://github.com/y330/Pydash
+#------ Lê o mapa do jogo 
+#------ Lógica de leitura do mapa baseada no jogo desse repositorio https://github.com/y330/Pydash
 def load_map(filename):
     with open(filename, newline='') as csvfile:
         map_data = []
@@ -176,13 +160,11 @@ def load_map(filename):
 
 map_data = load_map("assets\\maps\\level_1.csv")
 
-elements = pygame.sprite.Group()
-
-
 def init_level(map):
     all_spikes = pygame.sprite.Group()
     all_platforms = pygame.sprite.Group()
     all_ends = pygame.sprite.Group()
+    elements = pygame.sprite.Group()
     x = 0
     y = 0
     for row in map:
@@ -195,40 +177,30 @@ def init_level(map):
             
             elif col == "End":
                 all_ends.add(End(sprites['Moeda'], (x, y), elements))
-            
             x += 50
         y += 50 
         x = 0
     return all_spikes, all_platforms, all_ends
 
-
-
+#------ Define e adiciona sprites aos grupos
 all_sprites = pygame.sprite.Group()
 all_ends = pygame.sprite.Group()
-
 player = Player(sprites['Player'])
-
 fundo1 = Fundo(sprites['blue'])
 fundo2 = Fundo(sprites['blue'])
 fundo2.rect.x += fundo2.rect.width
-
 spikes = Fundo(sprites['Spike'])
-
 all_sprites.add(fundo1)
 all_sprites.add(fundo2)
-
 floor1 = Floor(sprites['blue'])
 floor2 = Floor(sprites['blue'])
 floor2.rect.x += floor2.rect.width
 all_sprites.add(floor1)
 all_sprites.add(floor2)
-
-
 all_sprites.add(player)
-
 all_spikes, all_platforms, all_ends = init_level(map_data)
 
-# numero de mortes
+#------ Lógica do Número de mortes
 tentativas = 0
 BRANCO = (255, 255, 255)
 fonte = pygame.font.Font(None, 38) 
@@ -236,7 +208,7 @@ texto = (f'Mortes: {tentativas}')
 texto_ =  fonte.render(texto, True, BRANCO)
 posicao = (8, 5)
 
-# carrega musica 
+#----- Carrega musica 
 pygame.mixer.music.load('assets\\songs\\gdsong.wav')
 pygame.mixer.music.set_volume(0.3)
 
@@ -256,7 +228,8 @@ while game:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.jump()
-    
+
+#----- Condicionais de colisão
     if pygame.sprite.spritecollide(player, all_spikes, False):
         pygame.time.wait(80) 
         player.volta_posicao()
@@ -294,7 +267,7 @@ while game:
 
     else: 
 
-        window.fill((255, 255, 255))  # Preenche com a cor branca
+        window.fill((255, 255, 255)) 
         Camera = -fundo1.speedx
         all_sprites.draw(window)
         all_spikes.draw(window)
@@ -304,7 +277,7 @@ while game:
         window.blit(texto_, posicao)
 
         # ----- Atualiza estado do jogo
-        pygame.display.update()  # Mostra o novo frame para o jogador
+        pygame.display.update()  
         all_sprites.update()
         all_spikes.update()
         all_platforms.update()
