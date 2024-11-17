@@ -23,8 +23,14 @@ sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
 
 inicio =  pygame.image.load("assets\\img\\inicio2.png").convert()
 
+fim = pygame.image.load("assets\\img\\fim.png").convert()
+
 sprites['Spike'] = pygame.image.load('assets\\img\\spike.png').convert_alpha()
 spike_novo = pygame.transform.scale(sprites['Spike'], (53, 53))
+
+sprites['Moeda'] = pygame.image.load('assets\\img\\moeda.png').convert_alpha()
+moeda = pygame.transform.scale(sprites['Moeda'], (60, 60))
+sprites['Moeda'] = moeda
 
 sprites['Spike'] = spike_novo
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
@@ -107,7 +113,6 @@ class Platform(pygame.sprite.Sprite):
         self.img = img
 
 class Spike(Draw):
-    """spike"""
 
     def __init__(self, image, pos, *groups):
         super().__init__(image, pos, *groups)
@@ -152,6 +157,12 @@ class Floor(pygame.sprite.Sprite):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
             self.rect.x = self.rect.width
+class End(Draw):
+    def __init__(self, image, pos, *groups):
+        super().__init__(image, pos, *groups)
+        self.speedx =9
+    def update(self):
+        self.rect.x -= self.speedx
 
 # le o mapa do jogo 
 # lógica de leitura do mapa baseada no jogo desse repositorio https://github.com/y330/Pydash
@@ -167,9 +178,11 @@ map_data = load_map("assets\\maps\\level_1.csv")
 
 elements = pygame.sprite.Group()
 
+
 def init_level(map):
     all_spikes = pygame.sprite.Group()
     all_platforms = pygame.sprite.Group()
+    all_ends = pygame.sprite.Group()
     x = 0
     y = 0
     for row in map:
@@ -179,15 +192,19 @@ def init_level(map):
             
             elif col == "Bloco":  
                 all_platforms.add(blocos(sprites['Bloco'], (x, y), elements))
+            
+            elif col == "End":
+                all_ends.add(End(sprites['Moeda'], (x, y), elements))
+            
             x += 50
-
         y += 50 
         x = 0
-    return all_spikes, all_platforms
+    return all_spikes, all_platforms, all_ends
 
 
 
 all_sprites = pygame.sprite.Group()
+all_ends = pygame.sprite.Group()
 
 player = Player(sprites['Player'])
 
@@ -209,7 +226,7 @@ all_sprites.add(floor2)
 
 all_sprites.add(player)
 
-all_spikes, all_platforms  = init_level(map_data)
+all_spikes, all_platforms, all_ends = init_level(map_data)
 
 # numero de mortes
 tentativas = 0
@@ -219,6 +236,7 @@ texto = (f'Mortes: {tentativas}')
 texto_ =  fonte.render(texto, True, BRANCO)
 posicao = (8, 5)
 
+# carrega musica 
 pygame.mixer.music.load('assets\\songs\\gdsong.wav')
 pygame.mixer.music.set_volume(0.3)
 
@@ -227,8 +245,6 @@ jogo = 'inicio'
 # ===== Loop principal =====
 while game:
     
-    
-
     # ----- Trata eventos
     for event in pygame.event.get():
         # ----- Verifica consequências  
@@ -246,7 +262,7 @@ while game:
         all_spikes.empty()
         all_platforms.empty()
         elements.empty()
-        all_spikes, all_platforms = init_level(map_data)
+        all_spikes, all_platforms, all_ends = init_level(map_data)
         pygame.mixer.music.stop()
         pygame.mixer.music.play()
         tentativas += 1
@@ -257,7 +273,14 @@ while game:
         platform = pygame.sprite.spritecollideany(player, all_platforms)
         player.rect.bottom = platform.rect.top
         player.on_ground = True
-        
+    
+    if pygame.sprite.spritecollide(player, all_ends, False):
+            window.fill((255, 255, 255))  
+            window.blit(fim, (0, 0))  
+            pygame.display.update()
+            pygame.mixer.music.stop()
+            pygame.time.wait(3000) 
+            game = False
     
 
 
@@ -275,6 +298,7 @@ while game:
         all_sprites.draw(window)
         all_spikes.draw(window)
         all_platforms.draw(window)
+        all_ends.draw(window)
         elements.draw(window)
         window.blit(texto_, posicao)
 
@@ -283,6 +307,7 @@ while game:
         all_sprites.update()
         all_spikes.update()
         all_platforms.update()
+        all_ends.update()
 
     FPS = 120
     clock.tick(FPS)
