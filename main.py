@@ -21,7 +21,7 @@ sprites['background'] = pygame.image.load("assets\\img\\background.png").convert
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
 sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
 
-inicio =  pygame.image.load("assets\\img\\inicio2.png").convert()
+inicio =  pygame.image.load("assets\\img\\inicio.png").convert()
 
 fim = pygame.image.load("assets\\img\\fim.png").convert()
 
@@ -258,6 +258,7 @@ while game:
                 player.jump()
     
     if pygame.sprite.spritecollide(player, all_spikes, False):
+        pygame.time.wait(80) 
         player.volta_posicao()
         all_spikes.empty()
         all_platforms.empty()
@@ -275,11 +276,11 @@ while game:
         player.on_ground = True
     
     if pygame.sprite.spritecollide(player, all_ends, False):
+            pygame.time.wait(250) 
             window.fill((255, 255, 255))  
             window.blit(fim, (0, 0))  
             pygame.display.update()
-            pygame.mixer.music.stop()
-            pygame.time.wait(3000) 
+            pygame.time.wait(1600) 
             game = False
     
 
