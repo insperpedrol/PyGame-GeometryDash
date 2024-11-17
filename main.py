@@ -10,31 +10,33 @@ pygame.init()
 WIDTH = 720
 HEIGHT = 720
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Geometry Dash - Python Edition')
+pygame.display.set_caption('Cube Dash - Pygame Edition')
 # ----- Inicia assets
 player_WIDTH = 75
 player_HEIGHT = 75
 Camera = 0
 elements = pygame.sprite.Group()
-
 sprites = {}
 sprites['background'] = pygame.image.load("assets\\img\\background.png").convert()
 sprites['blue'] =  pygame.image.load("assets\\img\\blue.png").convert()
 sprites['Player'] = pygame.image.load('assets\\img\\cubo.png').convert_alpha()
+
+inicio =  pygame.image.load("assets\\img\\inicio2.png").convert()
+
 sprites['Spike'] = pygame.image.load('assets\\img\\spike.png').convert_alpha()
-spike_novo = pygame.transform.scale(sprites['Spike'], (50, 50))
+spike_novo = pygame.transform.scale(sprites['Spike'], (53, 53))
 
 sprites['Spike'] = spike_novo
 sprites['Player'] = pygame.transform.scale(sprites['Player'], (player_WIDTH, player_HEIGHT))
 
 sprites['Bloco']  = pygame.image.load('assets\\img\\bloco.png').convert_alpha()
-bloco_novo = pygame.transform.scale(sprites['Bloco'], (50, 50))
+bloco_novo = pygame.transform.scale(sprites['Bloco'], (53, 53))
 sprites['Bloco'] = bloco_novo
 
-# --- Implementing the song >
-pygame.mixer.music.load('assets\\songs\\gdsong.wav')
-pygame.mixer.music.set_volume(0.3)
-pygame.mixer.music.play()
+
+# --- Implementando musica
+
+#som_morte = pygame.mixer.Sound('assets\\songs\\bomba.mp3')
 
 backcolorWIDTH = 720
 backcolorHEIGHT = backcolorWIDTH
@@ -53,7 +55,7 @@ backcolor2.fill((52, 128, 235))
 game = True
 clock = pygame.time.Clock()
 
-# Parent class
+# Classes
 class Draw(pygame.sprite.Sprite):
 
     def __init__(self, image, pos, *groups):
@@ -109,7 +111,7 @@ class Spike(Draw):
 
     def __init__(self, image, pos, *groups):
         super().__init__(image, pos, *groups)
-        self.speedx = 10
+        self.speedx = 9
 
     def update(self):
         self.rect.x -= self.speedx
@@ -117,7 +119,7 @@ class Spike(Draw):
 class blocos(Draw):
     def __init__(self, image, pos, *groups):
         super().__init__(image, pos, *groups)
-        self.speedx =10
+        self.speedx =9
     def update(self):
         self.rect.x -= self.speedx
 
@@ -144,14 +146,15 @@ class Floor(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = HEIGHT / 1.3
-        self.speedx = 10
+        self.speedx = 9
     
     def update(self):
         self.rect.x -= self.speedx
         if self.rect.right <= 0:
             self.rect.x = self.rect.width
 
-
+# le o mapa do jogo 
+# lógica de leitura do mapa baseada no jogo desse repositorio https://github.com/y330/Pydash
 def load_map(filename):
     with open(filename, newline='') as csvfile:
         map_data = []
@@ -160,8 +163,8 @@ def load_map(filename):
             map_data.append([(cell) for cell in row])
     return map_data
 
-
 map_data = load_map("assets\\maps\\level_1.csv")
+
 elements = pygame.sprite.Group()
 
 def init_level(map):
@@ -208,19 +211,30 @@ all_sprites.add(player)
 
 all_spikes, all_platforms  = init_level(map_data)
 
+# numero de mortes
 tentativas = 0
 BRANCO = (255, 255, 255)
 fonte = pygame.font.Font(None, 38) 
 texto = (f'Mortes: {tentativas}')
 texto_ =  fonte.render(texto, True, BRANCO)
-posicao = (520, 5)
+posicao = (8, 5)
+
+pygame.mixer.music.load('assets\\songs\\gdsong.wav')
+pygame.mixer.music.set_volume(0.3)
+
+
+jogo = 'inicio'
 # ===== Loop principal =====
 while game:
+    
     
 
     # ----- Trata eventos
     for event in pygame.event.get():
         # ----- Verifica consequências  
+        if event.type == pygame.MOUSEBUTTONDOWN:
+                jogo = 'jogando'
+                pygame.mixer.music.play()
         if event.type == pygame.QUIT:
             game = False
         if event.type == pygame.KEYDOWN:
@@ -237,31 +251,38 @@ while game:
         pygame.mixer.music.play()
         tentativas += 1
         texto = (f'Mortes: {tentativas}')
-        texto_ =  fonte.render(texto, True, BRANCO)
+        texto_ =  fonte.render(texto, True, BRANCO) 
     
     if pygame.sprite.spritecollide(player, all_platforms, False):
         platform = pygame.sprite.spritecollideany(player, all_platforms)
         player.rect.bottom = platform.rect.top
         player.on_ground = True
-        player.speedy = 0
+        
     
 
 
     # ----- Gera saídas
-    window.fill((255, 255, 255))  # Preenche com a cor branca
+    if jogo == 'inicio':
 
-    Camera = -fundo1.speedx
-    all_sprites.draw(window)
-    all_spikes.draw(window)
-    all_platforms.draw(window)
-    elements.draw(window)
-    window.blit(texto_, posicao)
+        window.fill((255, 255, 255))
+        window.blit(inicio, (0,0))
+        pygame.display.update()
 
-    # ----- Atualiza estado do jogo
-    pygame.display.update()  # Mostra o novo frame para o jogador
-    all_sprites.update()
-    all_spikes.update()
-    all_platforms.update()
+    else: 
+
+        window.fill((255, 255, 255))  # Preenche com a cor branca
+        Camera = -fundo1.speedx
+        all_sprites.draw(window)
+        all_spikes.draw(window)
+        all_platforms.draw(window)
+        elements.draw(window)
+        window.blit(texto_, posicao)
+
+        # ----- Atualiza estado do jogo
+        pygame.display.update()  # Mostra o novo frame para o jogador
+        all_sprites.update()
+        all_spikes.update()
+        all_platforms.update()
 
     FPS = 120
     clock.tick(FPS)
